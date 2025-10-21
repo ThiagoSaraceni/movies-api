@@ -26,10 +26,15 @@ export class Movie extends Model {
   declare id: number;
 
   @Column({
+    type: DataType.INTEGER,
+  })
+  year: number;
+
+  @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  nome: string;
+  name: string;
 
   @Column({
     type: DataType.INTEGER,
@@ -49,6 +54,13 @@ export class Movie extends Model {
     allowNull: true,
   })
   description: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    comment: 'URL da imagem do filme',
+  })
+  img_url: string;
 
   @BelongsToMany(() => Genre, () => MovieGenre)
   genres: Genre[];
