@@ -5,6 +5,8 @@ import {
   DataType,
   BelongsToMany,
   HasMany,
+  PrimaryKey,
+  AutoIncrement,
 } from 'sequelize-typescript';
 import { Genre } from 'src/modules/genres/entities/genre.entity';
 import { MovieGenre } from './movie-genre.entity';
@@ -16,10 +18,10 @@ import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.ent
   underscored: true,
 })
 export class Movie extends Model {
+  @PrimaryKey
+  @AutoIncrement
   @Column({
-    type: DataType.BIGINT,
-    primaryKey: true,
-    autoIncrement: true,
+    type: DataType.INTEGER,
   })
   declare id: number;
 

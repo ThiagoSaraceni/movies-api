@@ -5,6 +5,8 @@ import {
   HasMany,
   Table,
   Model,
+  AutoIncrement,
+  PrimaryKey,
 } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.entity';
@@ -15,10 +17,10 @@ import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.ent
   underscored: true,
 })
 export class User extends Model {
+  @PrimaryKey
+  @AutoIncrement
   @Column({
-    type: DataType.BIGINT,
-    allowNull: false,
-    primaryKey: true,
+    type: DataType.INTEGER,
   })
   declare id: number;
 
