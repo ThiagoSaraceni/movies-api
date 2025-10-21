@@ -1,26 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateGenreDto } from './dto/create-genre.dto';
-import { UpdateGenreDto } from './dto/update-genre.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { Genre } from './entities/genre.entity';
 
 @Injectable()
 export class GenresService {
-  create(createGenreDto: CreateGenreDto) {
-    return 'This action adds a new genre';
+  constructor(
+    @InjectModel(Genre)
+    private readonly genreModel: typeof Genre,
+  ) {}
+
+  async create(createGenreDto: CreateGenreDto) {
+    try {
+      const existing = await this.genreModel.findOne({
+        where: { name: createGenreDto.name },
+      });
+      if (existing) throw new ConflictException('Genre already exist');
+
+      const genre = await this.genreModel.create({ name: createGenreDto.name });
+
+      return genre;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all genres`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} genre`;
-  }
-
-  update(id: number, updateGenreDto: UpdateGenreDto) {
-    return `This action updates a #${id} genre`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} genre`;
+  async findAll() {
+    return this.genreModel.findAll({ attributes: ['id', 'name'] });
   }
 }

@@ -25,7 +25,7 @@ export class Genre extends Model {
   declare id: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(50),
     allowNull: false,
     unique: true,
   })

@@ -17,7 +17,7 @@ export class UsersService {
   async createUser(dto: CreateUserDto) {
     try {
       const userAlreadyExist = await this.findByEmail(dto.email);
-      if (userAlreadyExist) throw new ConflictException('E-mail já cadastrado');
+      if (userAlreadyExist) throw new ConflictException('E-mail already exist');
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
 
