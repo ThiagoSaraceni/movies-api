@@ -12,7 +12,7 @@ import { MovieGenre } from 'src/modules/movies/entities/movie-genre.entity';
 
 @Table({
   tableName: 'genres',
-  timestamps: true,
+  timestamps: false,
   underscored: true,
   schema: 'public',
 })
