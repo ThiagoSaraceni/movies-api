@@ -1,5 +1,4 @@
 import {
-  BeforeCreate,
   Column,
   DataType,
   HasMany,
@@ -8,7 +7,6 @@ import {
   AutoIncrement,
   PrimaryKey,
 } from 'sequelize-typescript';
-import * as bcrypt from 'bcrypt';
 import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.entity';
 
 @Table({
@@ -32,6 +30,18 @@ export class User extends Model {
   email: string;
 
   @Column({
+    type: DataType.STRING(50),
+    allowNull: false,
+  })
+  name: string;
+
+  @Column({
+    type: DataType.STRING(50),
+    allowNull: false,
+  })
+  last_name: string;
+
+  @Column({
     type: DataType.STRING,
     allowNull: false,
   })
@@ -46,15 +56,4 @@ export class User extends Model {
 
   @HasMany(() => MovieReview)
   reviews: MovieReview[];
-
-  @BeforeCreate
-  static async hashPassword(user: User): Promise<void> {
-    if (user.password) {
-      user.password = await bcrypt.hash(user.password, 10);
-    }
-  }
-
-  async comparePassword(password: string): Promise<boolean> {
-    return bcrypt.compare(password, this.password);
-  }
 }
