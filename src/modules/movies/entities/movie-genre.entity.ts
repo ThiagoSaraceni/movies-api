@@ -20,7 +20,7 @@ export class MovieGenre extends Model {
     allowNull: false,
     field: 'movie_id',
   })
-  movie_id: number;
+  declare movie_id: number;
 
   @ForeignKey(() => Genre)
   @Column({
@@ -28,5 +28,5 @@ export class MovieGenre extends Model {
     allowNull: false,
     field: 'genre_id',
   })
-  genre_id: number;
+  declare genre_id: number;
 }

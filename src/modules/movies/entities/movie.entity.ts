@@ -3,12 +3,12 @@ import {
   Column,
   Model,
   DataType,
-  //   BelongsToMany,
-  //   HasMany,
+  BelongsToMany,
+  HasMany,
 } from 'sequelize-typescript';
-// import { Genre } from './genre.model';
-// import { MovieGenre } from './movie-genre.model';
-// import { MovieReview } from './movie-review.model';
+import { Genre } from 'src/modules/genres/entities/genre.entity';
+import { MovieGenre } from './movie-genre.entity';
+import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.entity';
 
 @Table({
   tableName: 'movies',
@@ -60,9 +60,9 @@ export class Movie extends Model {
   })
   updated_at: Date;
 
-  //   @BelongsToMany(() => Genre, () => MovieGenre)
-  //   genres: Genre[];
+  @BelongsToMany(() => Genre, () => MovieGenre)
+  genres: Genre[];
 
-  //   @HasMany(() => MovieReview)
-  //   reviews: MovieReview[];
+  @HasMany(() => MovieReview)
+  reviews: MovieReview[];
 }

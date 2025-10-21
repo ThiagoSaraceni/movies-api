@@ -1,6 +1,13 @@
-import { Model } from 'sequelize';
-import { BeforeCreate, Column, DataType, Table } from 'sequelize-typescript';
+import {
+  BeforeCreate,
+  Column,
+  DataType,
+  HasMany,
+  Table,
+  Model,
+} from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
+import { MovieReview } from 'src/modules/movie-reviews/entities/movie-review.entity';
 
 @Table({
   tableName: 'users',
@@ -9,11 +16,11 @@ import * as bcrypt from 'bcrypt';
 })
 export class User extends Model {
   @Column({
-    type: DataType.UUIDV4,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.BIGINT,
+    allowNull: false,
     primaryKey: true,
   })
-  declare id: string;
+  declare id: number;
 
   @Column({
     type: DataType.STRING,
@@ -35,8 +42,8 @@ export class User extends Model {
   })
   role: string;
 
-  //   @HasMany(() => MovieReview)
-  //   reviews: MovieReview[];
+  @HasMany(() => MovieReview)
+  reviews: MovieReview[];
 
   @BeforeCreate
   static async hashPassword(user: User): Promise<void> {
