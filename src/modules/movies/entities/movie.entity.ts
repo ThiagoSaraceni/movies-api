@@ -3,8 +3,8 @@ import {
   Column,
   Model,
   DataType,
-  BelongsToMany,
-  HasMany,
+  //   BelongsToMany,
+  //   HasMany,
 } from 'sequelize-typescript';
 // import { Genre } from './genre.model';
 // import { MovieGenre } from './movie-genre.model';
