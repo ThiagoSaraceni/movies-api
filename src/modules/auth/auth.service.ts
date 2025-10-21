@@ -39,7 +39,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const accessToken = this.jwtService.sign(
-      { sub: user.id, email: user.email, type: 'access' },
+      { sub: user.id, email: user.email, type: 'access', role: user.role },
       {
         expiresIn: '15m',
         secret:
