@@ -48,18 +48,6 @@ export class Movie extends Model {
   })
   description: string;
 
-  @Column({
-    type: DataType.DATE,
-    field: 'created_at',
-  })
-  created_at: Date;
-
-  @Column({
-    type: DataType.DATE,
-    field: 'updated_at',
-  })
-  updated_at: Date;
-
   @BelongsToMany(() => Genre, () => MovieGenre)
   genres: Genre[];
 

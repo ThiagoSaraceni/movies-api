@@ -54,18 +54,6 @@ export class MovieReview extends Model<MovieReview, Partial<MovieReview>> {
   })
   rating: number;
 
-  @Column({
-    type: DataType.DATE,
-    field: 'created_at',
-  })
-  created_at: Date;
-
-  @Column({
-    type: DataType.DATE,
-    field: 'updated_at',
-  })
-  updated_at: Date;
-
   @BelongsTo(() => User)
   user: User;
 
