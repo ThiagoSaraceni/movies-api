@@ -1,0 +1,81 @@
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
+
+interface JwtPayload {
+  sub: number;
+  email: string;
+  type: 'access' | 'refresh';
+}
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  private readonly jwtSecret: string;
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly reflector: Reflector,
+  ) {
+    const secret = this.configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET not defined in environment variables');
+    }
+    this.jwtSecret = secret;
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: JwtPayload }>();
+    const authHeader = request.headers['authorization'];
+
+    if (
+      !authHeader ||
+      Array.isArray(authHeader) ||
+      !authHeader.startsWith('Bearer ')
+    ) {
+      throw new UnauthorizedException(
+        'Token não fornecido ou formato inválido',
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    let payload: JwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.jwtSecret,
+      } as JwtVerifyOptions);
+    } catch (err) {
+      const error = err as { name?: string; message?: string };
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token expirado');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Token inválido');
+      }
+      throw new UnauthorizedException('Falha na autenticação');
+    }
+
+    if (payload.type !== 'access') {
+      throw new UnauthorizedException('Tipo inválido de token');
+    }
+
+    request.user = payload;
+    return true;
+  }
+}

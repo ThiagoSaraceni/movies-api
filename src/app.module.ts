@@ -5,6 +5,7 @@ import { UsersModule } from './modules/users/users.module';
 import { GenresModule } from './modules/genres/genres.module';
 import { MovieReviewsModule } from './modules/movie-reviews/movie-reviews.module';
 import { MovieGenre } from './modules/movies/entities/movie-genre.entity';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MovieGenre } from './modules/movies/entities/movie-genre.entity';
     GenresModule,
     MovieReviewsModule,
     MovieGenre,
+    AuthModule,
   ],
 })
 export class AppModule {}

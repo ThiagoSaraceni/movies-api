@@ -15,6 +15,12 @@ import { Movie } from 'src/modules/movies/entities/movie.entity';
   tableName: 'movie_reviews',
   timestamps: true,
   underscored: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'movie_id'],
+    },
+  ],
 })
 export class MovieReview extends Model<MovieReview, Partial<MovieReview>> {
   @PrimaryKey
