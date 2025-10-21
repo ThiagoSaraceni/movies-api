@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -17,6 +18,8 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { Movie } from './entities/movie.entity';
+import { GetMoviesQueryDto } from './dto/find-all-movies.dto';
 
 @ApiTags('Movies')
 @Controller('movies')
@@ -40,8 +43,8 @@ export class MoviesController {
   //   description: 'Lista de filmes retornada com sucesso',
   //   type: [MovieResponseDto],
   // })
-  findAll() {
-    return this.moviesService.findAll();
+  findAll(@Query() query: GetMoviesQueryDto) {
+    return this.moviesService.findAll(query);
   }
 
   @Get(':id')
@@ -56,21 +59,22 @@ export class MoviesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a movie' })
-  // @ApiOkResponse({
-  //   description: 'Filme atualizado com sucesso',
-  //   type: MovieResponseDto,
-  // })
+  @ApiOperation({ summary: 'Update a movie by ID' })
+  @ApiOkResponse({ description: 'Movie updated successfully', type: Movie })
   @ApiNotFoundResponse({ description: 'Movie not found' })
-  update(@Param('id') id: string, @Body() updateMovieDto: UpdateMovieDto) {
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateMovieDto: UpdateMovieDto,
+  ): Promise<Movie> {
     return this.moviesService.update(+id, updateMovieDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remove a movie' })
-  @ApiOkResponse({ description: 'Movie removed' })
+  @ApiOperation({ summary: 'Delete a movie by ID' })
+  @ApiOkResponse({ description: 'Movie deleted successfully' })
   @ApiNotFoundResponse({ description: 'Movie not found' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.moviesService.remove(+id);
   }
 }
