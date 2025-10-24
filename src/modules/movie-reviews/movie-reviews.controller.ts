@@ -1,34 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { MovieReviewsService } from './movie-reviews.service';
-import { CreateMovieReviewDto } from './dto/create-movie-review.dto';
-import { UpdateMovieReviewDto } from './dto/update-movie-review.dto';
+import { UpsertReviewDTO } from './dto/upsert-review-dto';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import type { JwtPayload } from '../auth/interface/jwt-payload.interface';
 
 @Controller('movie-reviews')
 export class MovieReviewsController {
   constructor(private readonly movieReviewsService: MovieReviewsService) {}
 
   @Post()
-  create(@Body() createMovieReviewDto: CreateMovieReviewDto) {
-    return this.movieReviewsService.create(createMovieReviewDto);
+  upsert(@Body() upsertDto: UpsertReviewDTO, @CurrentUser() user: JwtPayload) {
+    return this.movieReviewsService.upsert({
+      ...upsertDto,
+      user_id: user.sub,
+    });
   }
 
-  @Get()
-  findAll() {
-    return this.movieReviewsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.movieReviewsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMovieReviewDto: UpdateMovieReviewDto) {
-    return this.movieReviewsService.update(+id, updateMovieReviewDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.movieReviewsService.remove(+id);
+  @Get(':movie_id')
+  findByMovie(
+    @Param('movie_id') movie_id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.movieReviewsService.findByMovie(+movie_id, +user.sub);
   }
 }
