@@ -3,6 +3,7 @@ import { UpsertReviewDTO } from './dto/upsert-review-dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { MovieReview } from './entities/movie-review.entity';
 import { Movie } from '../movies/entities/movie.entity';
+import { col, fn } from 'sequelize';
 
 @Injectable()
 export class MovieReviewsService {
@@ -38,8 +39,17 @@ export class MovieReviewsService {
     return reviewRecord;
   }
 
-  async findByMovie(movie_id: number, current_user_id?: number) {
-    console.log(current_user_id);
+  async findByMovie(movie_id: number) {
+    const ratingData: any = await this.movieReviewModel.findOne({
+      where: { movie_id },
+      attributes: [[fn('AVG', col('rating')), 'avgRating']],
+      raw: true,
+    });
+
+    const averageRating = ratingData?.avgRating
+      ? Math.ceil(Number(ratingData.avgRating))
+      : 0;
+
     const reviews = await this.movieReviewModel.findAll({
       where: { movie_id },
       include: ['user'],
@@ -48,15 +58,16 @@ export class MovieReviewsService {
 
     const enhancedReviews = reviews.map((r) => {
       const { user, ...reviewWithoutUser } = r.toJSON();
-
       return {
         ...reviewWithoutUser,
-        current_user_review: current_user_id
-          ? user?.id === current_user_id
-          : false,
+        user_name: user.name,
+        user_last_name: user.last_name,
       };
     });
 
-    return enhancedReviews;
+    return {
+      reviews: enhancedReviews,
+      averageRating,
+    };
   }
 }

@@ -17,10 +17,7 @@ export class MovieReviewsController {
   }
 
   @Get(':movie_id')
-  findByMovie(
-    @Param('movie_id') movie_id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
-    return this.movieReviewsService.findByMovie(+movie_id, +user.sub);
+  findByMovie(@Param('movie_id') movie_id: string) {
+    return this.movieReviewsService.findByMovie(+movie_id);
   }
 }
