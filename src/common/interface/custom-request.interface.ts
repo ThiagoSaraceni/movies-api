@@ -3,4 +3,5 @@ import { JwtPayload } from 'src/modules/auth/interface/jwt-payload.interface';
 
 export interface CustomRequest extends Request {
   user?: JwtPayload;
+  cookies: Partial<Record<string, any>>;
 }

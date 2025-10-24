@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { JwtPayload } from 'src/modules/auth/interface/jwt-payload.interface';
+import { CustomRequest } from '../interface/custom-request.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -35,20 +36,27 @@ export class AuthGuard implements CanActivate {
 
     const request = context
       .switchToHttp()
-      .getRequest<Request & { user?: JwtPayload }>();
-    const authHeader = request.headers['authorization'];
+      .getRequest<CustomRequest & { user?: JwtPayload }>();
 
+    let token: string | undefined;
+    const authHeader = request.headers['authorization'];
     if (
-      !authHeader ||
-      Array.isArray(authHeader) ||
-      !authHeader.startsWith('Bearer ')
+      authHeader &&
+      !Array.isArray(authHeader) &&
+      authHeader.startsWith('Bearer ')
     ) {
+      token = authHeader.replace('Bearer ', '');
+    }
+
+    if (!token && request?.cookies?.acess_token) {
+      token = request?.cookies?.acess_token as string | undefined;
+    }
+
+    if (!token) {
       throw new UnauthorizedException(
         'Token não fornecido ou formato inválido',
       );
     }
-
-    const token = authHeader.replace('Bearer ', '');
 
     let payload: JwtPayload;
     try {

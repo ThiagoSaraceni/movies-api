@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './config/swagger.config';
 import { AuthGuard } from './common/guard/auth.guard';
 import { RolesGuard } from './common/guard/roles.guard';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,13 @@ async function bootstrap() {
 
   app.useGlobalGuards(app.get(AuthGuard));
   app.useGlobalGuards(new RolesGuard(reflector));
+
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    credentials: true,
+  });
+
+  app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe());
 
