@@ -1,98 +1,111 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cine Review API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend NestJS do [Cine Review](../movies-front) — plataforma estilo Letterboxd para descobrir filmes, avaliar e escrever reviews.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+O frontend é **mobile-first**; esta API expõe os endpoints consumidos pelo app (catálogo, reviews, auth).
 
-## Description
+## Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NestJS 11 + TypeScript
+- PostgreSQL (Docker local ou Supabase em produção)
+- Sequelize ORM + JWT (access + refresh tokens)
+- Swagger em `/documentation`
 
-## Project setup
+## Setup rápido
 
 ```bash
-$ npm install
+cp .env.example .env          # preencha JWT e banco (veja .env.example)
+npm install
+npm run start:dev             # http://localhost:3000
+npm run seed                  # ou npm run seed:full para mais dados
 ```
 
-## Compile and run the project
+Guia Supabase/WSL/deploy: **[DEPLOY.md](./DEPLOY.md)**
 
-```bash
-# development
-$ npm run start
+## Seeds
 
-# watch mode
-$ npm run start:dev
+| Comando | Conteúdo |
+|---------|----------|
+| `npm run seed` | 8 filmes, 3 usuários, 6 reviews |
+| `npm run seed:full` | 28 filmes, 8 usuários, 40+ reviews (ideal para demo) |
 
-# production mode
-$ npm run start:prod
-```
+Ambos são idempotentes — podem rodar de novo sem duplicar gêneros/usuários.
 
-## Run tests
+## Como o projeto funciona
 
-```bash
-# unit tests
-$ npm run test
+### Papéis (roles)
 
-# e2e tests
-$ npm run test:e2e
+| Role | O que pode fazer |
+|------|------------------|
+| **user** | Ver filmes, buscar, escrever/editar a própria review |
+| **admin** | Tudo que o user faz + criar usuários via API |
 
-# test coverage
-$ npm run test:cov
-```
+### O que o usuário faz no app (frontend)
 
-## Deployment
+- Cadastro (`/sign-up`) e login
+- Navegar catálogo com busca e paginação
+- Ver detalhe do filme (sinopse, gêneros, poster)
+- Ler reviews de outros usuários
+- Avaliar (1–5 estrelas) e escrever review (uma por filme, upsert)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Funcionalidades só no Swagger (sem tela no app)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Estes endpoints existem e funcionam, mas **não têm interface no frontend** — use `http://localhost:3000/documentation`:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+| Ação | Endpoint | Quem pode (hoje) |
+|------|----------|------------------|
+| Cadastrar filme | `POST /movies` | Qualquer usuário logado* |
+| Editar filme | `PATCH /movies/:id` | Qualquer usuário logado* |
+| Excluir filme | `DELETE /movies/:id` | Qualquer usuário logado* |
+| Cadastrar gênero | `POST /genres` | Qualquer usuário logado |
+| Criar usuário | `POST /users` | Somente **admin** |
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+\*Há TODO no código para restringir mutações de filmes a admin.
 
-## Resources
+**Como testar no Swagger:** `Authorize` → login via `POST /auth/login` → copie o `accessToken` → cole no campo Bearer.
 
-Check out a few resources that may come in handy when working with NestJS:
+Para popular o catálogo sem Swagger, use `npm run seed` ou `npm run seed:full`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Autenticação
 
-## Support
+- JWT access token (15 min) + refresh token (7 dias)
+- Login e register são públicos (`POST /auth/login`, `POST /auth/register`)
+- Demais rotas exigem token
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Banco
 
-## Stay in touch
+- Supabase = apenas PostgreSQL (sem Auth/Storage do Supabase)
+- No WSL use o **pooler** (`aws-*-*.pooler.supabase.com:6543`), não `db.*.supabase.co`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Credenciais de teste
 
-## License
+| Email | Senha | Role |
+|-------|-------|------|
+| admin@cine-review.com | admin12345 | admin |
+| maria@cine-review.com | user12345 | user |
+| joao@cine-review.com | user12345 | user |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Com `seed:full`, também: ana, pedro, carla, lucas, julia @cine-review.com / user12345
+
+## Endpoints principais
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/auth/register` | Público | Criar conta |
+| POST | `/auth/login` | Público | Login |
+| POST | `/auth/refresh` | Público | Renovar token |
+| GET | `/movies` | JWT | Listar (paginação + busca) |
+| GET | `/movies/:id` | JWT | Detalhe |
+| POST | `/movies` | JWT | Criar filme |
+| POST | `/movie-reviews` | JWT | Criar/atualizar review |
+| GET | `/movie-reviews/:movie_id` | JWT | Reviews + média |
+| GET | `/genres` | JWT | Listar gêneros |
+| POST | `/users` | JWT + admin | Criar usuário |
+
+## Variáveis de ambiente
+
+Veja `.env.example`.
+
+## Deploy
+
+**[DEPLOY.md](./DEPLOY.md)**
