@@ -47,8 +47,8 @@ export class AuthGuard implements CanActivate {
       token = authHeader.replace('Bearer ', '');
     }
 
-    if (!token && request?.cookies?.acess_token) {
-      token = request?.cookies?.acess_token as string | undefined;
+    if (!token && request?.cookies?.access_token) {
+      token = request?.cookies?.access_token as string | undefined;
     }
 
     if (!token) {
