@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -39,8 +40,8 @@ export class UsersService {
         },
       };
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error);
+      if (error instanceof ConflictException) throw error;
+      throw new InternalServerErrorException('Failed to create user');
     }
   }
 

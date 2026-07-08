@@ -4,7 +4,8 @@ import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
-import { jwtConstants } from './auth.constants';
+import { UsersRole } from '../users/enums/users-role.enum';
+import { AuthRegisterDto } from './dto/auth-register.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,8 +43,7 @@ export class AuthService {
       { sub: user.id, email: user.email, type: 'access', role: user.role },
       {
         expiresIn: '15m',
-        secret:
-          this.configService.get<string>('JWT_SECRET') || jwtConstants.secret,
+        secret: this.configService.get<string>('JWT_SECRET'),
       },
     );
 
@@ -56,6 +56,23 @@ export class AuthService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  async register(
+    payload: AuthRegisterDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    await this.usersService.createUser({
+      name: payload.name,
+      last_name: payload.last_name,
+      email: payload.email,
+      password: payload.password,
+      role: UsersRole.USER,
+    });
+
+    return this.login({
+      email: payload.email,
+      password: payload.password,
+    });
   }
 
   async refresh(refreshToken: string): Promise<{ accessToken: string }> {
@@ -75,7 +92,12 @@ export class AuthService {
       if (!user) throw new UnauthorizedException('User not found');
 
       const accessToken = this.jwtService.sign(
-        { sub: user.id, email: user.email, type: 'access' },
+        {
+          sub: user.id,
+          email: user.email,
+          type: 'access',
+          role: user.role,
+        },
         {
           expiresIn: '15m',
           secret: this.configService.get<string>('JWT_SECRET'),
